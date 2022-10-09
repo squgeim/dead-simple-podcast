@@ -1,66 +1,89 @@
 type PodcastProperty = 'title' | 'thumbUrl' | 'subtitle';
 
+export type StoredPodcast = {
+	feedUrl: string;
+	rawFeed: string;
+};
+
 export class Podcast {
 	#parsedFeed?: Document;
+	#rawFeed?: string;
 	feedUrl: string;
-	record: Record<PodcastProperty, string | null> = {
-		title: null,
-		thumbUrl: null,
-		subtitle: null
+	record: Record<PodcastProperty, string> = {
+		title: '',
+		thumbUrl: '',
+		subtitle: '',
 	};
 
 	constructor(feedUrl: string) {
 		this.feedUrl = feedUrl;
 	}
 
+	get id() {
+		return this.feedUrl;
+	}
+
 	get title() {
-		if (!this.#parsedFeed) return null;
 		return this.record.title;
 	}
 
 	get thumbUrl() {
-		if (!this.#parsedFeed) return null;
 		return this.record.thumbUrl;
 	}
 
 	get description() {
-		if (!this.#parsedFeed) return null;
 		return this.record.subtitle;
 	}
 
 	fetchFeed = async () => {
 		const response = await fetch(`/api/rss-feed?url=${this.feedUrl}`);
-		const str = await response.text();
-		console.log(str);
-		this.#parsedFeed = new window.DOMParser().parseFromString(str, 'text/xml');
-		console.log(this.#parsedFeed);
+		this.#rawFeed = await response.text();
+		this.#parseFeedFromRaw();
 		this.#parseFeedIntoRecord();
 
 		return this;
+	};
+
+	#parseFeedFromRaw() {
+		if (!this.#rawFeed) return;
+		this.#parsedFeed = new window.DOMParser().parseFromString(this.#rawFeed, 'text/xml');
 	}
 
 	#parseFeedIntoRecord() {
 		if (!this.#parsedFeed) return null;
-		const nodes = Array.from(this.#parsedFeed.querySelector("channel")?.children ?? []);
+		const nodes = Array.from(this.#parsedFeed.querySelector('channel')?.children ?? []);
 
 		for (const node of nodes) {
 			switch (node.nodeName) {
 				case 'title':
-					this.record.title = node.textContent;
+					this.record.title = node.textContent ?? '';
 					break;
 				case 'itunes:subtitle':
-					this.record.subtitle = node.textContent;
+					this.record.subtitle = node.textContent ?? '';
 					break;
 				case 'itunes:image':
-					this.record.thumbUrl = node.getAttribute('href');
+					this.record.thumbUrl = node.getAttribute('href') ?? '';
 					break;
 			}
 		}
 	}
 
-	toJSON = () => {
-		return JSON.stringify({
-			rssFeed: this.feedUrl,
-		})
+	static hydrate(storedPodcast: StoredPodcast) {
+		const podcast = new Podcast(storedPodcast.feedUrl);
+		podcast.#rawFeed = storedPodcast.rawFeed;
+		podcast.#parseFeedFromRaw();
+		podcast.#parseFeedIntoRecord();
+		return podcast;
 	}
+
+	marshall = (): StoredPodcast => {
+		if (!this.feedUrl || !this.#rawFeed) {
+			throw new Error('Cannot marshall Podcast that has not been fetched.');
+		}
+
+		return {
+			feedUrl: this.feedUrl,
+			rawFeed: this.#rawFeed,
+		};
+	};
 }
