@@ -1,5 +1,5 @@
 <script>
-	import Player from '../lib/player/index.svelte';
+	import Player from '$lib/components/player.svelte';
 </script>
 
 <h1>Dead Simple Podcast Player</h1>
