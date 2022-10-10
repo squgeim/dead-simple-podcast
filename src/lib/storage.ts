@@ -1,4 +1,5 @@
 import { get, writable } from 'svelte/store';
+import type { Episode } from './episode';
 
 import { Podcast, type StoredPodcast } from './podcast';
 
@@ -57,6 +58,10 @@ export function unsubscribeFromPodcast(podcast: Podcast) {
 		};
 	});
 }
+
+export function addEpisodeToNowPlaying(episode: Episode, placement: 'start' | 'end') {}
+
+export function ignoreEpisode(episode: Episode) {}
 
 export function isSubscribed(podcast: Podcast) {
 	return !!get(store).podcasts.find((p) => p.id === podcast.id);

@@ -1,3 +1,6 @@
+import type { Dayjs } from 'dayjs';
+import { Episode } from './episode';
+
 type PodcastProperty = 'title' | 'thumbUrl' | 'subtitle';
 
 export type StoredPodcast = {
@@ -33,6 +36,18 @@ export class Podcast {
 
 	get description() {
 		return this.record.subtitle;
+	}
+
+	*episodes(endDate?: Dayjs) {
+		if (!this.#parsedFeed) return null;
+
+		for (const item of this.#parsedFeed.querySelectorAll('item')) {
+			const epi = new Episode(item);
+			if (endDate && endDate.isAfter(epi.pubDate)) {
+				return;
+			}
+			yield epi;
+		}
 	}
 
 	fetchFeed = async () => {
