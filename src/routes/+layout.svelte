@@ -2,14 +2,39 @@
 	import Player from '$lib/components/player.svelte';
 </script>
 
-<h1>Dead Simple Podcast Player</h1>
-<nav>
-	<a href="/">Now Playing</a>
-	<a href="/episodes">Episodes</a>
-	<a href="/subscriptions">Subscriptions</a>
-	<a href="/add">Add Podcast</a>
-</nav>
+<div class="root">
+	<div class="top">
+		<h1>Dead Simple Podcast Player</h1>
+		<nav>
+			<a href="/">Now Playing</a>
+			<a href="/episodes">Episodes</a>
+			<a href="/subscriptions">Subscriptions</a>
+			<a href="/add">Add Podcast</a>
+		</nav>
+	</div>
 
-<slot />
+	<div class="page">
+		<slot />
+	</div>
 
-<Player />
+	<div class="player">
+		<Player />
+	</div>
+</div>
+
+<style>
+	:global(body) {
+		margin: 0;
+	}
+
+	.top {
+		position: sticky;
+		background: white;
+		top: 0;
+	}
+
+	.player {
+		position: sticky;
+		bottom: 0;
+	}
+</style>

@@ -5,7 +5,10 @@ import { Podcast, type StoredPodcast } from './podcast';
 
 type Store = {
 	podcasts: Podcast[];
+	nowPlaying?: Episode;
 };
+
+export const store = writable<Store>(readFromStorage());
 
 function readFromStorage(): Store {
 	if (typeof window === 'undefined') return { podcasts: [] };
@@ -25,13 +28,6 @@ function writeToStorage(_store: Store) {
 	const podcasts = _store.podcasts.map((p) => p.marshall());
 	localStorage.setItem('DSPP_STORE', JSON.stringify({ podcasts }));
 }
-
-export const store = writable<Store>(readFromStorage(), () => {
-	return () => {
-		console.log('Teardown...');
-		writeToStorage(get(store));
-	};
-});
 
 export function subscribeToPodcast(podcast: Podcast) {
 	store.update((_store) => {
@@ -54,6 +50,7 @@ export function unsubscribeFromPodcast(podcast: Podcast) {
 	store.update((_store) => {
 		const newPodcasts = _store.podcasts.filter((p) => p.id !== podcast.id);
 		return {
+			..._store,
 			podcasts: newPodcasts,
 		};
 	});
@@ -63,8 +60,21 @@ export function addEpisodeToNowPlaying(episode: Episode, placement: 'start' | 'e
 
 export function ignoreEpisode(episode: Episode) {}
 
+export function setNowPlayingEpisode(episode: Episode) {
+	episode.isPlaying = true;
+	store.update((_store) => {
+		return {
+			..._store,
+			nowPlaying: episode,
+		};
+	});
+}
+
 export function isSubscribed(podcast: Podcast) {
 	return !!get(store).podcasts.find((p) => p.id === podcast.id);
 }
 
-store.subscribe((_store) => writeToStorage(_store));
+store.subscribe((_store) => {
+	console.log('STORE UPDATED', _store);
+	writeToStorage(_store);
+});

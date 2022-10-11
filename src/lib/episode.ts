@@ -1,4 +1,5 @@
 import dayjs from 'dayjs';
+import type { Podcast } from './podcast';
 
 export class Episode {
 	#item: Element;
@@ -8,9 +9,12 @@ export class Episode {
 	readonly subtitle?: string;
 	readonly explicit?: boolean;
 	readonly mediaUrl?: string;
+	podcast: Podcast;
+	isPlaying = false;
 
-	constructor(item: Element) {
+	constructor(item: Element, podcast: Podcast) {
 		this.#item = item;
+		this.podcast = podcast;
 		for (const child of item.children) {
 			switch (child.nodeName) {
 				case 'pubDate':

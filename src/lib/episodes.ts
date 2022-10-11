@@ -1,9 +1,10 @@
 import dayjs from 'dayjs';
 import type { Podcast } from './podcast';
+import type { Episode } from "./episode";
 
 export function getEpisodes(podcasts: Podcast[], page = 1) {
-	const episodes = [];
-	const endDate = dayjs().subtract(3, 'months');
+	const episodes: Episode[] = [];
+	const endDate = dayjs().subtract(6, 'months');
 	for (const pod of podcasts) {
 		for (const epi of pod.episodes(endDate)) {
 			episodes.push(epi);

@@ -42,7 +42,7 @@ export class Podcast {
 		if (!this.#parsedFeed) return null;
 
 		for (const item of this.#parsedFeed.querySelectorAll('item')) {
-			const epi = new Episode(item);
+			const epi = new Episode(item, this);
 			if (endDate && endDate.isAfter(epi.pubDate)) {
 				return;
 			}
