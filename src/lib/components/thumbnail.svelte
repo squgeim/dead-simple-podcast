@@ -1,6 +1,5 @@
 <script>
-	import { goto } from '$app/navigation';
-	import { isSubscribed, subscribeToPodcast, unsubscribeFromPodcast } from '$lib/storage';
+	import {goto} from '$app/navigation';
 
 	/**
 	 * @type {import('$lib/podcast').Podcast}
@@ -8,25 +7,21 @@
 	export let podcast;
 
 	function handleSubscribe() {
-		if (podcast) {
-			subscribeToPodcast(podcast);
-			goto('/subscriptions');
-		}
+		podcast.subscribe();
+		goto('/subscriptions');
 	}
 
 	function handleUnsubscribe() {
-		if (podcast) {
-			unsubscribeFromPodcast(podcast);
-		}
+		podcast.unsubscribe()
 	}
 </script>
 
 <div class="root">
-	<img src={podcast.thumbUrl} alt="" />
+	<img src={podcast.thumbUrl} alt=""/>
 	<div>
 		<h3>{podcast.title}</h3>
 		<p>{podcast.description}</p>
-		{#if isSubscribed(podcast)}
+		{#if podcast.isSubscribed}
 			<button on:click={handleUnsubscribe}>Unsubscribe</button>
 		{:else}
 			<button on:click={handleSubscribe}>Subscribe</button>

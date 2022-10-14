@@ -1,35 +1,29 @@
 <script>
-	import {store} from '$lib/storage';
+	import {nowPlayingEpisode as epi} from "$lib/storage/nowPlayingEpisode";
 
 	/**
 	 * @type {HTMLAudioElement}
 	 */
 	let audioElem;
 
-	/**
-	 * @type {import('$lib/episode').Episode}
-	 */
-	let nowPlaying;
-	$: nowPlaying = $store.nowPlaying;
-
 	function handleCanPlay() {
 		console.log("can play");
-		if (nowPlaying.isPlaying) {
+		if ($epi.isPlaying) {
 			audioElem.play();
 		}
 	}
 </script>
 
-{#if nowPlaying}
+{#if $epi}
 	<div class="root">
 		<div>
-			<img src={nowPlaying.podcast.thumbUrl} alt=""/>
+			<img src={$epi.podcast.thumbUrl} alt=""/>
 			<div>
-				<h3>{nowPlaying.title}</h3>
-				<p>{nowPlaying.podcast.title}</p>
+				<h3>{$epi.title}</h3>
+				<p>{$epi.podcast.title}</p>
 			</div>
 		</div>
-		<audio src={nowPlaying.mediaUrl} controls bind:this={audioElem} on:canplay={handleCanPlay}></audio>
+		<audio src={$epi.mediaUrl} controls bind:this={audioElem} on:canplay={handleCanPlay}></audio>
 	</div>
 {/if}
 

@@ -1,5 +1,7 @@
 import type { Dayjs } from 'dayjs';
+import { get } from 'svelte/store';
 import { Episode } from './episode';
+import { subscriptions } from './storage/subscriptions';
 
 type PodcastProperty = 'title' | 'thumbUrl' | 'subtitle';
 
@@ -38,6 +40,10 @@ export class Podcast {
 		return this.record.subtitle;
 	}
 
+	get isSubscribed() {
+		return !!get(subscriptions).find((p) => p.id === this.id);
+	}
+
 	*episodes(endDate?: Dayjs) {
 		if (!this.#parsedFeed) return null;
 
@@ -50,14 +56,29 @@ export class Podcast {
 		}
 	}
 
-	fetchFeed = async () => {
+	subscribe() {
+		subscriptions.update((podcasts) => {
+			if (podcasts.find((p) => p.id === this.id)) {
+				// Already subscribed!
+				return podcasts;
+			}
+
+			return [...podcasts, this];
+		});
+	}
+
+	unsubscribe() {
+		subscriptions.update((podcasts) => podcasts.filter((p) => p.id !== this.id));
+	}
+
+	async fetchFeed() {
 		const response = await fetch(`/api/rss-feed?url=${this.feedUrl}`);
 		this.#rawFeed = await response.text();
 		this.#parseFeedFromRaw();
 		this.#parseFeedIntoRecord();
 
 		return this;
-	};
+	}
 
 	#parseFeedFromRaw() {
 		if (!this.#rawFeed) return;
@@ -91,7 +112,7 @@ export class Podcast {
 		return podcast;
 	}
 
-	marshall = (): StoredPodcast => {
+	toJSON(): StoredPodcast {
 		if (!this.feedUrl || !this.#rawFeed) {
 			throw new Error('Cannot marshall Podcast that has not been fetched.');
 		}
@@ -100,5 +121,5 @@ export class Podcast {
 			feedUrl: this.feedUrl,
 			rawFeed: this.#rawFeed,
 		};
-	};
+	}
 }
