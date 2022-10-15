@@ -6,6 +6,10 @@ const storage = localforage.createInstance({
 	driver: localforage.INDEXEDDB,
 });
 
+if (typeof window !== 'undefined') {
+	console.log(storage);
+}
+
 export type HydrateFn<T> = (val: string) => T;
 
 const key = (name: string) => `DSPP_${name}`;

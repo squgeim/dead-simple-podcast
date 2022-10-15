@@ -1,5 +1,6 @@
 <script>
 	import {nowPlayingEpisode as epi} from "$lib/storage/nowPlayingEpisode";
+	import {subscriptions} from "$lib/storage/subscriptions";
 
 	/**
 	 * @type {HTMLAudioElement}
@@ -7,7 +8,6 @@
 	let audioElem;
 
 	function handleCanPlay() {
-		console.log("can play");
 		if ($epi.isPlaying) {
 			audioElem.play();
 		}
@@ -17,10 +17,10 @@
 {#if $epi}
 	<div class="root">
 		<div>
-			<img src={$epi.podcast.thumbUrl} alt=""/>
+			<img src={$epi.getPodcast($subscriptions)?.thumbUrl} alt=""/>
 			<div>
 				<h3>{$epi.title}</h3>
-				<p>{$epi.podcast.title}</p>
+				<p>{$epi.getPodcast($subscriptions)?.title}</p>
 			</div>
 		</div>
 		<audio src={$epi.mediaUrl} controls bind:this={audioElem} on:canplay={handleCanPlay}></audio>

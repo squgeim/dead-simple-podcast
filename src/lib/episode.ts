@@ -6,29 +6,41 @@ import { nowPlayingQueue } from './storage/nowPlayingQueue';
 
 export class Episode {
 	#item: Element;
+	_pubDate?: dayjs.Dayjs;
 	readonly id?: string;
-	readonly pubDate?: dayjs.Dayjs;
+	readonly pubDateStr?: string;
 	readonly title?: string;
 	readonly desc?: string;
 	readonly subtitle?: string;
 	readonly explicit?: boolean;
 	readonly mediaUrl?: string;
-	podcast: Podcast;
+	readonly podcastUrl: string;
 
 	get isPlaying() {
 		return get(nowPlayingEpisode) === this;
 	}
 
+	getPodcast(subscriptions: Podcast[]) {
+		return subscriptions.find((p) => p.feedUrl === this.podcastUrl);
+	}
+
+	get pubDate() {
+		if (!this._pubDate || typeof this._pubDate === 'string') {
+			this._pubDate = dayjs(this.pubDateStr);
+		}
+		return this._pubDate;
+	}
+
 	constructor(item: Element, podcast: Podcast) {
 		this.#item = item;
-		this.podcast = podcast;
+		this.podcastUrl = podcast.feedUrl;
 		for (const child of item.children) {
 			switch (child.nodeName) {
 				case 'guid':
 					this.id = child.textContent ?? '';
 					break;
 				case 'pubDate':
-					this.pubDate = dayjs(child.textContent);
+					this.pubDateStr = child.textContent ?? '';
 					break;
 				case 'title':
 					this.title = child.textContent ?? '';
@@ -44,6 +56,7 @@ export class Episode {
 					break;
 				case 'enclosure':
 					this.mediaUrl = child.getAttribute('url') ?? '';
+					break;
 			}
 		}
 	}
@@ -54,11 +67,11 @@ export class Episode {
 
 	addToNowPlaying(placement: 'start' | 'shuffle' | 'end') {
 		nowPlayingQueue.update((queue) => {
-			if (placement === 'end') {
-				return Array.from(new Set([...queue, this]));
+			if (queue.find((epi) => epi.id === this.id)) {
+				return queue;
 			}
 
-			return Array.from(new Set([this, ...queue]));
+			return placement === 'end' ? [...queue, this] : [this, ...queue];
 		});
 	}
 }

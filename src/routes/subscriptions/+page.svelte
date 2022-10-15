@@ -3,7 +3,6 @@
 	import {subscriptions} from "$lib/storage/subscriptions";
 </script>
 
-<h1>Subscriptions</h1>
 {#each $subscriptions as pod}
 	<Thumbnail podcast={pod}/>
 {/each}

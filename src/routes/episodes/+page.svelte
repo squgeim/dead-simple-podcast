@@ -4,9 +4,8 @@
 	import {subscriptions} from "$lib/storage/subscriptions";
 
 	let page = 1;
-	let episodes = getEpisodes($subscriptions, page);
 </script>
 
-{#each episodes as epi}
+{#each getEpisodes($subscriptions, page) as epi}
 	<Episode episode={epi}/>
 {/each}

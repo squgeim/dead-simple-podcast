@@ -1,4 +1,6 @@
 <script>
+	import {subscriptions} from "$lib/storage/subscriptions";
+
 	/**
 	 * @type import('$lib/episode.ts').Episode
 	 */
@@ -25,7 +27,7 @@
 </script>
 
 <div class="root">
-	<img src={episode.podcast.thumbUrl} alt=""/>
+	<img src={episode.getPodcast($subscriptions)?.thumbUrl} alt=""/>
 	<div>
 		<h2>{episode.title}</h2>
 		<p>{episode.subtitle}</p>
