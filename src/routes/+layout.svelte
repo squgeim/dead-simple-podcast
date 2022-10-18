@@ -14,17 +14,18 @@
 	</div>
 
 	<div class="page">
-		<slot />
+		<slot/>
 	</div>
 
 	<div class="player">
-		<Player />
+		<Player/>
 	</div>
 </div>
 
 <style>
 	:global(body) {
 		margin: 0;
+		font-family: sans-serif;
 	}
 
 	.top {
@@ -36,5 +37,9 @@
 	.player {
 		position: sticky;
 		bottom: 0;
+	}
+
+	.page {
+		min-height: 100vh;
 	}
 </style>

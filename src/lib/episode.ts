@@ -1,24 +1,41 @@
 import dayjs from 'dayjs';
 import type { Podcast } from './podcast';
+import { nowPlayingEpisode } from './storage/nowPlayingEpisode';
+import { nowPlayingQueue } from './storage/nowPlayingQueue';
 
 export class Episode {
 	#item: Element;
-	readonly pubDate?: dayjs.Dayjs;
+	_pubDate?: dayjs.Dayjs;
+	readonly id?: string;
+	readonly pubDateStr?: string;
 	readonly title?: string;
 	readonly desc?: string;
 	readonly subtitle?: string;
 	readonly explicit?: boolean;
 	readonly mediaUrl?: string;
-	podcast: Podcast;
-	isPlaying = false;
+	readonly podcastUrl: string;
+
+	getPodcast(subscriptions: Podcast[]) {
+		return subscriptions.find((p) => p.feedUrl === this.podcastUrl);
+	}
+
+	get pubDate() {
+		if (!this._pubDate || typeof this._pubDate === 'string') {
+			this._pubDate = dayjs(this.pubDateStr);
+		}
+		return this._pubDate;
+	}
 
 	constructor(item: Element, podcast: Podcast) {
 		this.#item = item;
-		this.podcast = podcast;
+		this.podcastUrl = podcast.feedUrl;
 		for (const child of item.children) {
 			switch (child.nodeName) {
+				case 'guid':
+					this.id = child.textContent ?? '';
+					break;
 				case 'pubDate':
-					this.pubDate = dayjs(child.textContent);
+					this.pubDateStr = child.textContent ?? '';
 					break;
 				case 'title':
 					this.title = child.textContent ?? '';
@@ -30,11 +47,27 @@ export class Episode {
 					this.subtitle = child.textContent ?? '';
 					break;
 				case 'explicit':
-					this.explicit = child.textContent === 'yes' ? true : false;
+					this.explicit = child.textContent === 'yes';
 					break;
 				case 'enclosure':
 					this.mediaUrl = child.getAttribute('url') ?? '';
+					break;
 			}
 		}
+	}
+
+	play() {
+		this.addToNowPlaying('start');
+		nowPlayingEpisode.update(() => this);
+	}
+
+	addToNowPlaying(placement: 'start' | 'shuffle' | 'end') {
+		nowPlayingQueue.update((queue) => {
+			if (queue.find((epi) => epi.id === this.id)) {
+				return queue;
+			}
+
+			return placement === 'end' ? [...queue, this] : [this, ...queue];
+		});
 	}
 }

@@ -1,35 +1,39 @@
 <script>
-	import {store} from '$lib/storage';
+	import {nowPlayingEpisode as epi} from "$lib/storage/nowPlayingEpisode";
+	import {subscriptions} from "$lib/storage/subscriptions";
+	import {nowPlayingQueue} from "$lib/storage/nowPlayingQueue";
 
 	/**
 	 * @type {HTMLAudioElement}
 	 */
 	let audioElem;
 
-	/**
-	 * @type {import('$lib/episode').Episode}
-	 */
-	let nowPlaying;
-	$: nowPlaying = $store.nowPlaying;
-
-	function handleCanPlay() {
-		console.log("can play");
-		if (nowPlaying.isPlaying) {
-			audioElem.play();
+	function handleEnded() {
+		const queue = $nowPlayingQueue;
+		const currentPosition = queue.findIndex(e => e.id === $epi.id);
+		const next = queue[currentPosition + 1];
+		if (next) {
+			next.play();
 		}
 	}
 </script>
 
-{#if nowPlaying}
+{#if $epi}
 	<div class="root">
 		<div>
-			<img src={nowPlaying.podcast.thumbUrl} alt=""/>
+			<img src={$epi.getPodcast($subscriptions)?.thumbUrl} alt=""/>
 			<div>
-				<h3>{nowPlaying.title}</h3>
-				<p>{nowPlaying.podcast.title}</p>
+				<h3>{$epi.title}</h3>
+				<p>{$epi.getPodcast($subscriptions)?.title}</p>
 			</div>
 		</div>
-		<audio src={nowPlaying.mediaUrl} controls bind:this={audioElem} on:canplay={handleCanPlay}></audio>
+		<audio
+			src={$epi.mediaUrl}
+			controls
+			autoplay
+			bind:this={audioElem}
+			on:ended={handleEnded}
+		></audio>
 	</div>
 {/if}
 
