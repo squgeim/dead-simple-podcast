@@ -1,15 +1,19 @@
 <script>
 	import {nowPlayingEpisode as epi} from "$lib/storage/nowPlayingEpisode";
 	import {subscriptions} from "$lib/storage/subscriptions";
+	import {nowPlayingQueue} from "$lib/storage/nowPlayingQueue";
 
 	/**
 	 * @type {HTMLAudioElement}
 	 */
 	let audioElem;
 
-	function handleCanPlay() {
-		if ($epi.isPlaying) {
-			audioElem.play();
+	function handleEnded() {
+		const queue = $nowPlayingQueue;
+		const currentPosition = queue.findIndex(e => e.id === $epi.id);
+		const next = queue[currentPosition + 1];
+		if (next) {
+			next.play();
 		}
 	}
 </script>
@@ -23,7 +27,13 @@
 				<p>{$epi.getPodcast($subscriptions)?.title}</p>
 			</div>
 		</div>
-		<audio src={$epi.mediaUrl} controls bind:this={audioElem} on:canplay={handleCanPlay}></audio>
+		<audio
+			src={$epi.mediaUrl}
+			controls
+			autoplay
+			bind:this={audioElem}
+			on:ended={handleEnded}
+		></audio>
 	</div>
 {/if}
 

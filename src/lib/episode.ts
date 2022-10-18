@@ -1,5 +1,4 @@
 import dayjs from 'dayjs';
-import { get } from 'svelte/store';
 import type { Podcast } from './podcast';
 import { nowPlayingEpisode } from './storage/nowPlayingEpisode';
 import { nowPlayingQueue } from './storage/nowPlayingQueue';
@@ -15,10 +14,6 @@ export class Episode {
 	readonly explicit?: boolean;
 	readonly mediaUrl?: string;
 	readonly podcastUrl: string;
-
-	get isPlaying() {
-		return get(nowPlayingEpisode) === this;
-	}
 
 	getPodcast(subscriptions: Podcast[]) {
 		return subscriptions.find((p) => p.feedUrl === this.podcastUrl);
@@ -62,6 +57,7 @@ export class Episode {
 	}
 
 	play() {
+		this.addToNowPlaying('start');
 		nowPlayingEpisode.update(() => this);
 	}
 
